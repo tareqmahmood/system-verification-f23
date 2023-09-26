@@ -27,9 +27,10 @@ datatype Point = PointCtor(x:int, y:int)
 // name since the language can distinguish the two uses from context.
 
 // FIXME: fill in here (solution: 4 lines)
+// TODO: No understand
  ghost function subtractPoints(tip:Point, tail:Point) : Point
  {
-   PointCtor(tip.x - tail.x, tip.y - tail.x)
+   PointCtor(tip.x - tail.x, tip.y - tail.y)
  }
 // END EDIT
 
@@ -70,7 +71,7 @@ lemma ExampleUsingLightType() {
 lemma TwoWrongsDontMakeARight(dir:Direction)
 {
   // FIXME: fill in here (solution: 1 line)
-   assert TurnLeft(TurnLeft(TurnLeft(dir))) == TurnRight(TurnRight(dir));
+   assert TurnLeft(TurnLeft(dir)) == TurnRight(TurnRight(dir));
   // END EDIT
 }
 
@@ -86,6 +87,6 @@ lemma AlgebraicLunch()
   };
   // Fix this assertion. Hint: The two pizzas are the same element of the datatype.
   // FIXME: fill in here (solution: 1 line)
-   assert |meal| == 3;
+   assert |meal| == 2;
   // END EDIT
 }

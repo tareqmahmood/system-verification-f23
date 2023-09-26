@@ -23,14 +23,14 @@ lemma TryOutSomeSetLiterals()
   // None of these asserions are correct. Try them.
   // Then delete these first two...
   // FIXME: fill in here (solution: 0 lines)
-   assert HasSevenAndNotNine({7,9});
-   assert HasSevenAndNotNine({1,3,5,7,8,9,10});
+  // assert HasSevenAndNotNine({7,9});
+  // assert HasSevenAndNotNine({1,3,5,7,8,9,10});
   // END EDIT
 
   // ...and replace the argument of this assert with a set that does satisfy
   // the predicate.
   // FIXME: fill in here (solution: 1 line)
-   assert HasSevenAndNotNine({});
+  assert HasSevenAndNotNine({1, 3, 7});
   // END EDIT
 }
 
@@ -63,7 +63,7 @@ lemma SomeAssertionsAboutSets()
     possibly-infinite sets.)
   */
   // FIXME: fill in here (solution: 1 line)
-   assert |happySet| == 7;
+   assert |happySet| == 6;
   // END EDIT
 }
 
@@ -80,7 +80,7 @@ lemma ExperimentsWithSequences()
   assert fibo[0] == 1;
   assert fibo[8] == 34;
   // FIXME: fill in here (solution: 1 line)
-   assert fibo[9] == 21;
+   assert fibo[7] == 21;
   // END EDIT
 }
 
@@ -108,7 +108,7 @@ lemma ExperimentsWithSequenceSlicing()
   // END EDIT
 
   // FIXME: fill in here (solution: 1 line)
-   assert fibo[5..6] == [8,13];
+   assert fibo[5..7] == [8,13];
   // END EDIT
 }
 
@@ -130,12 +130,12 @@ lemma ExperimentsWithSequenceTypes()
   // all type errors are fixed, which would make the above exercises
   // impossible.)
   // FIXME: fill in here (solution: 1 line)
-  // var whatsMyProblem := [0, 1, 2, false];
+   var whatsMyProblem := [0, 1, 2, 3];
   // END EDIT
 
   assert |seqOfSets| == 3;
   // Type checking means the |expr| below is a set-cardinality operator.
   // FIXME: fill in here (solution: 1 line)
-   assert |seqOfSets[1]| == 3;
+   assert |seqOfSets[1]| == 2;
   // END EDIT
 }
