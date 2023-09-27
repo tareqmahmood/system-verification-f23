@@ -1,3 +1,5 @@
 {
-  "dafny.version": "latest nightly",
+    "dafny.version": "latest nightly",
+    "dafny.automaticVerification": "onsave",
+    "editor.fontSize": 16
 }
