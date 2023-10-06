@@ -13,54 +13,115 @@
 
 // Define all the relevant state in this datatype.
 // FIXME: fill in here (solution: 8 lines)
- datatype Variables = Variables(tableSize: nat)
- {
-   ghost predicate WellFormed() {
-     && 0 < tableSize
-   }
- }
+datatype Variables = Variables(tableSize: nat, owner: seq<int>)
+{
+  ghost predicate WellFormed() {
+    && 0 < tableSize
+    && |owner| == tableSize
+    && (forall cs :: 0 <= cs < |owner| ==> 0 <= owner[cs] <= tableSize)
+    && (forall cs :: 0 <= cs < |owner| && 0 < owner[cs] ==> cs == leftChopstick(owner[cs], tableSize) || cs == rightChopstick(owner[cs], tableSize))
+  }
+}
 // END EDIT
 
 ghost predicate Init(v:Variables) {
   // FIXME: fill in here (solution: 3 lines)
-      true  // Replace me
-  // END EDIT
+  && v.WellFormed()
+  && forall p :: p in v.owner ==> p == 0
+                 // END EDIT
 }
 
 // FIXME: fill in here (solution: 11 lines)
- // (optional) Add any helper functions desired here
+// (optional) Add any helper functions desired here
+
+function rightChopstick(philosopherIndex:nat, tableSize:nat): int
+  requires 1 <= tableSize
+  requires 1 <= philosopherIndex <= tableSize
+{
+  philosopherIndex - 1
+}
+
+function leftChopstick(philosopherIndex:nat, tableSize:nat): int
+  requires 1 <= tableSize
+  requires 1 <= philosopherIndex <= tableSize
+{
+  if philosopherIndex == tableSize then 0
+  else philosopherIndex
+}
+
+function rightPhilosopher(philosopherIndex:nat, tableSize:nat): nat
+  requires 1 <= tableSize
+  requires 1 <= philosopherIndex <= tableSize
+{
+  if philosopherIndex == 1 then tableSize
+  else philosopherIndex - 1
+}
+
+function leftPhilosopher(philosopherIndex:nat, tableSize:nat): nat
+  requires 1 <= tableSize
+  requires 1 <= philosopherIndex <= tableSize
+{
+  if philosopherIndex == tableSize then 1
+  else philosopherIndex + 1
+}
+
 // END EDIT
 
 // Philosopher with index philosopherIndex acquires left chopstick
 ghost predicate AcquireLeft(v:Variables, v':Variables, philosopherIndex:nat) {
   // FIXME: fill in here (solution: 5 lines)
-      true  // Replace me
-  // END EDIT
+  && v.WellFormed() && v'.WellFormed()
+  && v.tableSize == v'.tableSize
+  && 1 <= philosopherIndex <= v.tableSize
+  && 0 <= leftChopstick(philosopherIndex, v.tableSize) < |v.owner|
+  && v.owner[leftChopstick(philosopherIndex, v.tableSize)] == 0
+  && v'.owner[leftChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+  && forall cs :: 0 <= cs < |v.owner| && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
+                  // END EDIT
 }
 
 // Philosopher with index philosopherIndex acquires right chopstick
 ghost predicate AcquireRight(v:Variables, v':Variables, philosopherIndex:nat) {
   // FIXME: fill in here (solution: 5 lines)
-      true  // Replace me
-  // END EDIT
+  && v.WellFormed() && v'.WellFormed()
+  && v.tableSize == v'.tableSize
+  && 1 <= philosopherIndex <= v.tableSize
+  && 0 <= rightChopstick(philosopherIndex, v.tableSize) < |v.owner|
+  && v.owner[rightChopstick(philosopherIndex, v.tableSize)] == 0
+  && v'.owner[rightChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+  && forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
+                  // END EDIT
 }
 
 // Philosopher with index philosopherIndex releases both chopsticks
 ghost predicate ReleaseBoth(v:Variables, v':Variables, philosopherIndex:nat) {
   // FIXME: fill in here (solution: 5 lines)
-      true  // Replace me
-  // END EDIT
+  && v.WellFormed() && v'.WellFormed()
+  && v.tableSize == v'.tableSize
+  && 1 <= philosopherIndex <= v.tableSize
+  && 0 <= leftChopstick(philosopherIndex, v.tableSize) < |v.owner|
+  && 0 <= rightChopstick(philosopherIndex, v.tableSize) < |v.owner|
+  && v.owner[leftChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+  && v.owner[rightChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+  && v'.owner[leftChopstick(philosopherIndex, v.tableSize)] == 0
+  && v'.owner[rightChopstick(philosopherIndex, v.tableSize)] == 0
+  && forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
+                  // END EDIT
 }
 
 datatype Step =
     // FIXME: fill in here (solution: 3 lines)
-     Step()  // Replace me
+  | AcquireLeftStep(p: nat)
+  | AcquireRightStep(p: nat)
+  | ReleaseBothStep(p: nat)
     // END EDIT
 
 ghost predicate NextStep(v:Variables, v':Variables, step: Step) {
   match step
   // FIXME: fill in here (solution: 3 lines)
-   case Step => false  // Replace me
+  case AcquireLeftStep(p) => AcquireLeft(v, v', p)  // Replace me
+  case AcquireRightStep(p) => AcquireRight(v, v', p)
+  case ReleaseBothStep(p) => ReleaseBoth(v, v', p)
   // END EDIT
 }
 
@@ -81,8 +142,8 @@ ghost predicate NoSticksAcquired(v: Variables)
   requires v.WellFormed()
 {
   // FIXME: fill in here (solution: 8 lines)
-          true // Replace me
-  // END EDIT
+  forall p :: p in v.owner ==> p == 0
+              // END EDIT
 }
 
 // Change this predicate to be true if and only if philosopher
@@ -94,8 +155,10 @@ ghost predicate BothSticksAcquired(v: Variables, philosopherIndex: nat)
   requires v.WellFormed()
 {
   // FIXME: fill in here (solution: 6 lines)
-      true
-  // END EDIT
+  && 1 <= philosopherIndex
+  && v.owner[leftChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+  && v.owner[rightChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
+     // END EDIT
 }
 
 // Show that, in the Init state, no philosopher has chopsticks.
@@ -104,7 +167,7 @@ lemma InitProperty(v: Variables, philosopherIndex:nat)
   ensures NoSticksAcquired(v)
 {
   // FIXME: fill in here (solution: 0 lines)
-   // Add a proof (if needed).
+  // Add a proof (if needed).
   // END EDIT
 }
 
@@ -121,5 +184,18 @@ lemma PseudoLiveness(philosopherIndex:nat) returns (behavior:seq<Variables>)
   ensures BothSticksAcquired(behavior[|behavior|-1], philosopherIndex)  // Behavior ultimately achieves acquisition for philosopherIndex
 {
   // FIXME: fill in here (solution: 6 lines)
+  var v0 := Variables(tableSize := 3, owner := [0, 0, 0]);
+  var v1 := Variables(tableSize := 3, owner := [1, 0, 0]);
+  var s0 := AcquireRightStep(1);
+  assert(NextStep(v0, v1, s0));
+  // assert(Next(v0, v1));
+
+  var v2 := Variables(tableSize := 3, owner := [1, 1, 0]);
+  var s1 := AcquireLeftStep(1);
+  assert(NextStep(v1, v2, s1));
+  // assert(Next(v1, v2));
+
+  behavior := [v0, v1, v2];
+
   // END EDIT
 }
