@@ -76,8 +76,8 @@ ghost predicate AcquireLeft(v:Variables, v':Variables, philosopherIndex:nat) {
   && 0 <= leftChopstick(philosopherIndex, v.tableSize) < |v.owner|
   && v.owner[leftChopstick(philosopherIndex, v.tableSize)] == 0
   && v'.owner[leftChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
-  && forall cs :: 0 <= cs < |v.owner| && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
-                  // END EDIT
+  && (forall cs :: 0 <= cs < |v.owner| && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs])
+     // END EDIT
 }
 
 // Philosopher with index philosopherIndex acquires right chopstick
@@ -89,8 +89,8 @@ ghost predicate AcquireRight(v:Variables, v':Variables, philosopherIndex:nat) {
   && 0 <= rightChopstick(philosopherIndex, v.tableSize) < |v.owner|
   && v.owner[rightChopstick(philosopherIndex, v.tableSize)] == 0
   && v'.owner[rightChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
-  && forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
-                  // END EDIT
+  && (forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs])
+     // END EDIT
 }
 
 // Philosopher with index philosopherIndex releases both chopsticks
@@ -105,8 +105,8 @@ ghost predicate ReleaseBoth(v:Variables, v':Variables, philosopherIndex:nat) {
   && v.owner[rightChopstick(philosopherIndex, v.tableSize)] == philosopherIndex
   && v'.owner[leftChopstick(philosopherIndex, v.tableSize)] == 0
   && v'.owner[rightChopstick(philosopherIndex, v.tableSize)] == 0
-  && forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs]
-                  // END EDIT
+  && (forall cs :: 0 <= cs < |v.owner| && cs != rightChopstick(philosopherIndex, v.tableSize) && cs != leftChopstick(philosopherIndex, v.tableSize) ==> v.owner[cs] == v'.owner[cs])
+     // END EDIT
 }
 
 datatype Step =
