@@ -17,9 +17,12 @@
 // simultaneously.
 
 // FIXME: fill in here (solution: 13 lines)
-datatype Variables = Variables() {
+datatype Variables = Variables(owner: nat, knows: seq<bool>) {
   ghost predicate WellFormed() {
-    true
+    && |knows| > 0   // client + server
+    && 0 <= owner <= |knows|  // server is |knows|
+    && (owner < |knows| ==> knows[owner])
+    && (forall c :: 0 <= c < |knows| && c != owner ==> !knows[c])
   }
 }
 // END EDIT
@@ -27,23 +30,49 @@ datatype Variables = Variables() {
 
 ghost predicate Init(v:Variables) {
   && v.WellFormed()
-     // FIXME: fill in here (solution: 3 lines)
-                                         && true  // Replace me
-     // END EDIT
+  // FIXME: fill in here (solution: 3 lines)
+  && v.owner == |v.knows|
+  && forall c :: 0 <= c < |v.knows| ==> !v.knows[c]
+  // END EDIT
 }
 // FIXME: fill in here (solution: 23 lines)
+ghost predicate TransferLock(v: Variables, v':Variables, clientIndex: nat)
+{
+  && v.WellFormed() && v'.WellFormed()
+  && |v.knows| == |v'.knows|
+  && clientIndex < |v.knows|
+  && v.owner == |v.knows|
+  // && (forall c :: 0 <= c < |v.knows| ==> !v.knows[c])
+  && v'.owner == clientIndex
+  && v'.knows[clientIndex]
+  // && (forall c :: 1 <= c < |v'.knows| && c != clientIndex ==> !v'.knows[c])
+}
+
+ghost predicate RevokeLock(v: Variables, v':Variables, clientIndex: nat)
+{
+  && v.WellFormed() && v'.WellFormed()
+  && |v.knows| == |v'.knows|
+  && clientIndex < |v.knows|
+  && v.owner == clientIndex
+  && v.knows[clientIndex]
+  // && (forall c :: 1 <= c < |v.knows| && c != clientIndex ==> !v.knows[c])
+  && v'.owner == |v.knows|
+  // && (forall c :: 1 <= c < |v'.knows| ==> !v'.knows[c])
+}
 // END EDIT
 // Jay-Normal-Form: pack all the nondeterminism into a single object
 // that gets there-exist-ed once.
 datatype Step =
     // FIXME: fill in here (solution: 2 lines)
-   | SomeStep(somearg: int)   // Replace me
+   | TransferLockStep(c: nat)
+   | RevokeLockStep(c: nat)
     // END EDIT
 
 ghost predicate NextStep(v:Variables, v':Variables, step: Step) {
   match step
   // FIXME: fill in here (solution: 2 lines)
-   case SomeStep(somearg) => false  // Replace me
+   case TransferLockStep(c) => TransferLock(v, v', c)
+   case RevokeLockStep(c) => RevokeLock(v, v', c)
   // END EDIT
 }
 
@@ -61,7 +90,8 @@ ghost predicate Next(v:Variables, v':Variables) {
 // idea in terms of the Variables you have defined.
 ghost predicate Safety(v:Variables) {
   // FIXME: fill in here (solution: 10 lines)
-        false  // Replace me
+  && v.WellFormed()
+  && forall c1, c2 :: (0 <= c1 < |v.knows| && 0 <= c2 < |v.knows| && c1 < c2) ==> (!v.knows[c1] || !v.knows[c2])
   // END EDIT
 }
 
@@ -74,7 +104,10 @@ ghost predicate ClientHoldsLock(v: Variables, clientIndex: nat)
   requires v.WellFormed()
 {
   // FIXME: fill in here (solution: 1 line)
-   false  // Replace me
+  && v.WellFormed()
+  && clientIndex < |v.knows|
+  && v.owner == clientIndex
+  && v.knows[clientIndex]
   // END EDIT
 }
 
@@ -92,5 +125,19 @@ lemma PseudoLiveness(clientA:nat, clientB:nat) returns (behavior:seq<Variables>)
   ensures ClientHoldsLock(behavior[|behavior|-1], clientB) // eventually clientB acquires lock
 {
   // FIXME: fill in here (solution: 9 lines)
+  var v0 := Variables(owner := 3, knows := [false, false, false]);
+  var v1 := Variables(owner := 2, knows := [false, false, true]);
+  var s0 := TransferLockStep(2);
+  assert(NextStep(v0, v1, s0));
+
+  var v2 := Variables(owner := 3, knows := [false, false, false]);
+  var s1 := RevokeLockStep(2);
+  assert(NextStep(v1, v2, s1));
+
+  var v3 := Variables(owner := 0, knows := [true, false, false]);
+  var s2 := TransferLockStep(0);
+  assert(NextStep(v2, v3, s2));
+
+  behavior := [v0, v1, v2, v3];
   // END EDIT
 }
