@@ -10,9 +10,15 @@
 include "ch03exercise03.dfy"
 
 // FIXME: fill in here (solution: 11 lines)
- ghost predicate Inv(v:Variables) {
-   true // probably not strong enough :)
- }
+ghost predicate Inv(v:Variables) {
+  && v.WellFormed()
+  && (v.server.Unlocked? ==> forall i | 0 <= i < |v.clients| :: v.clients[i].Released?)
+  && (!(v.server.Unlocked?) ==> exists i | 0 <= i < |v.clients| :: v.clients[i].Acquired? && v.server == Client(i))
+  && (!(v.server.Unlocked?) ==> forall i, j | (0 <= i < |v.clients| 
+                                              && 0 <= j < |v.clients| 
+                                              && v.clients[i].Acquired? 
+                                              && v.clients[j].Acquired?) :: i == j)
+}
 // END EDIT
 
 // Here's your obligation. Probably easiest to break this up into three

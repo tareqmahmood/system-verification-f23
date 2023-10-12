@@ -33,7 +33,9 @@ module Crawler {
 
   ghost predicate Inv(v:Variables) {
     // FIXME: fill in here (solution: 1 line)
-     true  // probably not strong enough. :v)
+    // probably not strong enough. :v)
+    && v.x >= 0 
+    && v.x + v.y >= 5
     // END EDIT
   }
 
