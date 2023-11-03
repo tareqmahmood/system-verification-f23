@@ -2,4 +2,5 @@
     "dafny.version": "latest nightly",
     "dafny.automaticVerification": "onsave",
     // "editor.fontSize": 16
+    "editor.fontFamily": "FiraCode Nerd Font, 'Courier New', monospace"
 }
