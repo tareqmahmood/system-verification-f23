@@ -14,7 +14,7 @@ module Host {
   // Define your Message datatype here.
   datatype Message =
     // FIXME: fill in here (solution: 1 line)
-     Message() // Populate this datatype.
+    | MessageGrant(receiver: HostId, epoch: nat) // Populate this datatype.
     // END EDIT
 
   // Define your Host protocol state machine here.
@@ -22,10 +22,21 @@ module Host {
 
   datatype Variables = Variables(
     // FIXME: fill in here (solution: 2 lines)
-     c: Constants
+     c: Constants,
+     epoch: nat,
+     holdingLock: bool
     // Fill me in.
     // END EDIT
   )
+
+  {
+    ghost predicate WF() {
+      && c.numHosts > 0
+      && c.myId >= 0 
+      && c.myId < c.numHosts
+      && epoch >= 0
+    }
+  }
 
   // You can assume in Init below that the initial constants are set by the
   // DistributedSystem composite state machine, since we assume the host state
@@ -33,22 +44,52 @@ module Host {
 
   ghost predicate Init(v:Variables) {
     // FIXME: fill in here (solution: 2 lines)
-        true // Replace me
+    && v.WF()
+    && (v.c.myId == 0 ==> (v.epoch == 1 && v.holdingLock == true))
+    && (v.c.myId != 0 ==> (v.epoch == 0 && v.holdingLock == false))
     // END EDIT
   }
   // FIXME: fill in here (solution: 22 lines)
+
+  ghost predicate ReceiveGrant(v: Variables, v': Variables, msgOps: Network.MessageOps<Message>, epoch: nat) {
+    && v.WF()
+    && v'.WF()
+    && v'.c == v.c
+    && !v.holdingLock
+    && v'.holdingLock
+    && v.epoch < epoch
+    && v'.epoch == epoch
+    && msgOps.recv.Some?
+    && msgOps.recv.value == MessageGrant(v.c.myId, epoch)
+  }
+
+  ghost predicate SendGrant(v: Variables, v': Variables, msgOps: Network.MessageOps<Message>, receiver: HostId, epoch: nat) {
+    && v.WF()
+    && v'.WF()
+    && v'.c == v.c
+    && v.holdingLock
+    && !v'.holdingLock
+    && (v.epoch + 1) == epoch
+    && v'.epoch == v.epoch
+    && msgOps.recv.Some?
+    && receiver != v.c.myId
+    && msgOps.recv.value == MessageGrant(receiver, epoch)
+  }
+
   // END EDIT
   // JayNF
   datatype Step =
       // FIXME: fill in here (solution: 2 lines)
-     | SomeStep   // Replace me
+     | SendGrantStep(receiver: HostId, epoch: nat)
+     | ReceiveGrantStep(epoch: nat)
       // END EDIT
 
   ghost predicate NextStep(v:Variables, v':Variables, msgOps:Network.MessageOps<Message>, step: Step) {
     && v'.c == v.c
     && match step
        // FIXME: fill in here (solution: 2 lines)
-        case SomeStep => true
+        case SendGrantStep(receiver, epoch) => SendGrant(v, v', msgOps, receiver, epoch)
+        case ReceiveGrantStep(epoch) => ReceiveGrant(v, v', msgOps, epoch)
        // END EDIT
   }
 
