@@ -40,7 +40,8 @@ module SafetySpec {
   // Variables indicates that it holds the lock.
   ghost predicate HostHoldsLock(v:DistributedSystem.Variables, idx: int) {
     && v.WF()
-       // FIXME: fill in here (solution: 4 lines)
+    && v.ValidHostId(idx)
+    && v.hosts[idx].holdsLock
     && false
        // END EDIT
   }
@@ -48,7 +49,8 @@ module SafetySpec {
   // No two hosts think they hold the lock simultaneously.
   ghost predicate Safety(v:DistributedSystem.Variables) {
     // FIXME: fill in here (solution: 4 lines)
-    true // Replace this placeholder with an appropriate safety condition
+    && (forall i, j : int | v.ValidHostId(i) && v.ValidHostId(j) :: i == j)
+    // && (exists i : int | v.ValidHostId(i) :: HostHoldsLock(v, i))
     // END EDIT
   }
 }
@@ -67,9 +69,10 @@ module Proof {
   ghost predicate InFlight(v:Variables, message:Host.Message) {
     && v.WF()
     && message in v.network.sentMsgs
-                  // FIXME: fill in here (solution: 2 lines)
-    && false // ...add something about epoch numbers
-       // END EDIT
+    // FIXME: fill in here (solution: 2 lines)
+    && (forall i : int | v.ValidHostId(i) :: message.epoch > v.hosts[i].epoch)
+    // ...add something about epoch numbers
+    // END EDIT
   }
   // FIXME: fill in here (solution: 29 lines)
   // END EDIT

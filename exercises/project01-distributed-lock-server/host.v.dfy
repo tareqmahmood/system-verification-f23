@@ -24,7 +24,7 @@ module Host {
     // FIXME: fill in here (solution: 2 lines)
      c: Constants,
      epoch: nat,
-     holdingLock: bool
+     holdsLock: bool
     // Fill me in.
     // END EDIT
   )
@@ -45,8 +45,8 @@ module Host {
   ghost predicate Init(v:Variables) {
     // FIXME: fill in here (solution: 2 lines)
     && v.WF()
-    && (v.c.myId == 0 ==> (v.epoch == 1 && v.holdingLock == true))
-    && (v.c.myId != 0 ==> (v.epoch == 0 && v.holdingLock == false))
+    && (v.c.myId == 0 ==> (v.epoch == 1 && v.holdsLock == true))
+    && (v.c.myId != 0 ==> (v.epoch == 0 && v.holdsLock == false))
     // END EDIT
   }
   // FIXME: fill in here (solution: 22 lines)
@@ -55,8 +55,8 @@ module Host {
     && v.WF()
     && v'.WF()
     && v'.c == v.c
-    && !v.holdingLock
-    && v'.holdingLock
+    && !v.holdsLock
+    && v'.holdsLock
     && v.epoch < epoch
     && v'.epoch == epoch
     && msgOps.recv.Some?
@@ -67,8 +67,8 @@ module Host {
     && v.WF()
     && v'.WF()
     && v'.c == v.c
-    && v.holdingLock
-    && !v'.holdingLock
+    && v.holdsLock
+    && !v'.holdsLock
     && (v.epoch + 1) == epoch
     && v'.epoch == v.epoch
     && msgOps.recv.Some?
