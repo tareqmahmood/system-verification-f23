@@ -13,7 +13,7 @@ module Host {
 
   // Define your Message datatype here.
   datatype Message =
-    // FIXME: fill in here (solution: 1 line)
+    // DONE: fill in here (solution: 1 line)
     | MessageGrant(receiver: HostId, epoch: nat) // Populate this datatype.
     // END EDIT
 
@@ -21,7 +21,7 @@ module Host {
   datatype Constants = Constants(numHosts: nat, myId:HostId)
 
   datatype Variables = Variables(
-    // FIXME: fill in here (solution: 2 lines)
+    // DONE: fill in here (solution: 2 lines)
      c: Constants,
      epoch: nat,
      holdsLock: bool
@@ -43,13 +43,13 @@ module Host {
   // machine knows the correct total number of hosts and its own ID.
 
   ghost predicate Init(v:Variables) {
-    // FIXME: fill in here (solution: 2 lines)
+    // DONE: fill in here (solution: 2 lines)
     && v.WF()
     && (v.c.myId == 0 ==> (v.epoch == 1 && v.holdsLock == true))
     && (v.c.myId != 0 ==> (v.epoch == 0 && v.holdsLock == false))
     // END EDIT
   }
-  // FIXME: fill in here (solution: 22 lines)
+  // DONE: fill in here (solution: 22 lines)
 
   ghost predicate ReceiveGrant(v: Variables, v': Variables, msgOps: Network.MessageOps<Message>, epoch: nat) {
     && v.WF()
@@ -69,7 +69,7 @@ module Host {
     && v'.c == v.c
     && v.holdsLock
     && !v'.holdsLock
-    && (v.epoch + 1) == epoch
+    && v.epoch < epoch
     && v'.epoch == v.epoch
     && msgOps.recv.Some?
     && receiver != v.c.myId
@@ -79,7 +79,7 @@ module Host {
   // END EDIT
   // JayNF
   datatype Step =
-      // FIXME: fill in here (solution: 2 lines)
+      // DONE: fill in here (solution: 2 lines)
      | SendGrantStep(receiver: HostId, epoch: nat)
      | ReceiveGrantStep(epoch: nat)
       // END EDIT
@@ -87,7 +87,7 @@ module Host {
   ghost predicate NextStep(v:Variables, v':Variables, msgOps:Network.MessageOps<Message>, step: Step) {
     && v'.c == v.c
     && match step
-       // FIXME: fill in here (solution: 2 lines)
+       // DONE: fill in here (solution: 2 lines)
         case SendGrantStep(receiver, epoch) => SendGrant(v, v', msgOps, receiver, epoch)
         case ReceiveGrantStep(epoch) => ReceiveGrant(v, v', msgOps, epoch)
        // END EDIT

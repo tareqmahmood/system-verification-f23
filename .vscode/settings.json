@@ -2,5 +2,19 @@
     "dafny.version": "latest nightly",
     "dafny.automaticVerification": "onsave",
     // "editor.fontSize": 16
-    "editor.fontFamily": "FiraCode Nerd Font, 'Courier New', monospace"
+    "editor.fontFamily": "FiraCode Nerd Font, 'Courier New', monospace",
+    "todohighlight.keywords": [
+        {
+            "text": "DONE:",
+            "color": "#FFFFFF",
+            "backgroundColor": "Green",
+            "isWholeLine": false
+        },
+        {
+            "text": "DRAFT:",
+            "color": "#000000",
+            "backgroundColor": "Yellow",
+            "isWholeLine": false
+        }
+    ],
 }

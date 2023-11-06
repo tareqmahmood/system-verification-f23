@@ -40,17 +40,17 @@ module SafetySpec {
   // Variables indicates that it holds the lock.
   ghost predicate HostHoldsLock(v:DistributedSystem.Variables, idx: int) {
     && v.WF()
+    // DRAFT: fill in here (solution: 4 lines)
     && v.ValidHostId(idx)
     && v.hosts[idx].holdsLock
-    && false
-       // END EDIT
+    // END EDIT
   }
 
   // No two hosts think they hold the lock simultaneously.
   ghost predicate Safety(v:DistributedSystem.Variables) {
-    // FIXME: fill in here (solution: 4 lines)
-    && (forall i, j : int | v.ValidHostId(i) && v.ValidHostId(j) :: i == j)
-    // && (exists i : int | v.ValidHostId(i) :: HostHoldsLock(v, i))
+    // DRAFT: fill in here (solution: 4 lines)
+    && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
+    // && (exists i : int :: HostHoldsLock(v, i))
     // END EDIT
   }
 }
@@ -69,17 +69,20 @@ module Proof {
   ghost predicate InFlight(v:Variables, message:Host.Message) {
     && v.WF()
     && message in v.network.sentMsgs
-    // FIXME: fill in here (solution: 2 lines)
+    // DRAFT: fill in here (solution: 2 lines)
     && (forall i : int | v.ValidHostId(i) :: message.epoch > v.hosts[i].epoch)
     // ...add something about epoch numbers
     // END EDIT
   }
+
+
   // FIXME: fill in here (solution: 29 lines)
   // END EDIT
 
   ghost predicate Inv(v:Variables) {
     // FIXME: fill in here (solution: 13 lines)
-    false // Replace this placeholder with an invariant that's inductive and supports Safety.
+    // Replace this placeholder with an invariant that's inductive and supports Safety.
+    && (exists i : int | v.ValidHostId(i) :: (forall j : int | j != i && v.ValidHostId(j) :: v.hosts[i].epoch > v.hosts[j].epoch))
     // END EDIT
   }
 
@@ -92,6 +95,11 @@ module Proof {
     var step :| NextStep(v, v', step);
     var id := step.id;
     var hstep :| Host.NextStep(v.hosts[id], v'.hosts[id], step.msgOps, hstep);
+    
+
+    assert InFlight(v, step.msgOps.send.value);
+    assert InFlight(v', step.msgOps.recv.value);
+
     // END EDIT
   }
 
