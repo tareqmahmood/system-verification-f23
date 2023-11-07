@@ -81,25 +81,47 @@ module Proof {
 
   // DONE: fill in here (solution: 29 lines)
 
+  ghost predicate AtStartNoMessageHost0HoldsLock(v: Variables)
+  {
+    && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
+  }
+
+  ghost predicate SomeOneHoldsLockAfterSomeMessage(v: Variables)
+  {
+    && (|v.network.sentMsgs| > 0 && |v.hosts| > 0 ==> (exists i:int, m:Host.Message | !InFlight(v, m) && v.ValidHostId(i) :: (m.epoch == v.hosts[i].epoch && v.hosts[i].holdsLock)))
+  }
+
+  ghost predicate NoTwoHostsHoldingLock(v: Variables)
+  {
+    && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
+  }
+
+  ghost predicate ThereIsAInFlightMessage(v: Variables)
+  {
+    && (|v.network.sentMsgs| > 0)
+    && (exists m:Host.Message :: InFlight(v, m))
+  }
+
   ghost predicate SingleHostHoldsLock(v: Variables)
   {
     && v.WF()
-    && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
-    && (|v.network.sentMsgs| > 0 && |v.hosts| > 0 ==> (exists i:int, m:Host.Message | !InFlight(v, m) && v.ValidHostId(i) :: (m.epoch == v.hosts[i].epoch && v.hosts[i].holdsLock)))
-    && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
+    // && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
+    && AtStartNoMessageHost0HoldsLock(v)
+    && SomeOneHoldsLockAfterSomeMessage(v)
+    && NoTwoHostsHoldingLock(v)
   }
 
   ghost predicate NoHostHoldsLock(v: Variables)
   {
     && v.WF()
-    && (|v.network.sentMsgs| > 0)
-    && (exists m:Host.Message :: InFlight(v, m))
+    && ThereIsAInFlightMessage(v)
     && (forall i:int | v.ValidHostId(i) :: !v.hosts[i].holdsLock)
   }
 
   ghost predicate AtMostOneHostHoldsLock(v: Variables)
   {
-    SingleHostHoldsLock(v) || NoHostHoldsLock(v)
+    && v.WF()
+    && (SingleHostHoldsLock(v) || NoHostHoldsLock(v))
   }
   // END EDIT
 
@@ -141,7 +163,8 @@ module Proof {
     // END EDIT
   }
 
-  lemma InvInit(v:Variables)
+  // debugging
+  lemma InvHoldAtInit(v:Variables)
     ensures Init(v) ==> Inv(v)
   {
 
@@ -154,7 +177,7 @@ module Proof {
   {
     // Develop any necessary proof here.
     // DONE: fill in here (solution: 3 lines)
-
+    // passed wihout proof
     // END EDIT
   }
 }
