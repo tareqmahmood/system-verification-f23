@@ -128,11 +128,7 @@ module Proof {
   ghost predicate Inv(v:Variables) {
     // DONE: fill in here (solution: 13 lines)
     // Replace this placeholder with an invariant that's inductive and supports Safety.
-    // && (exists i : int | v.ValidHostId(i) :: (forall j : int | j != i && v.ValidHostId(j) :: v.hosts[i].epoch > v.hosts[j].epoch))
-    && v.WF()
     && AtMostOneHostHoldsLock(v)
-    // && (forall message : Host.Message | InFlight(v, message) :: NoHostHoldsLock(v))
-    // && ((forall message : Host.Message :: !InFlight(v, message)) ==> SingleHostHoldsLock(v))
     // END EDIT
   }
 
