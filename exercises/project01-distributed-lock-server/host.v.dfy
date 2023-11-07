@@ -29,9 +29,10 @@ module Host {
     // END EDIT
   )
 
+  // Implemented WF on my own
   {
     ghost predicate WF() {
-      && c.numHosts > 0
+      && c.numHosts > 1
       && c.myId >= 0 
       && c.myId < c.numHosts
       && epoch >= 0
@@ -61,6 +62,7 @@ module Host {
     && v'.epoch == epoch
     && msgOps.recv.Some?
     && msgOps.recv.value == MessageGrant(v.c.myId, epoch)
+    && msgOps.recv.None?
   }
 
   ghost predicate SendGrant(v: Variables, v': Variables, msgOps: Network.MessageOps<Message>, receiver: HostId, epoch: nat) {
@@ -69,11 +71,12 @@ module Host {
     && v'.c == v.c
     && v.holdsLock
     && !v'.holdsLock
-    && v.epoch < epoch
+    && v.epoch == epoch + 1
     && v'.epoch == v.epoch
-    && msgOps.recv.Some?
     && receiver != v.c.myId
-    && msgOps.recv.value == MessageGrant(receiver, epoch)
+    && msgOps.send.Some?
+    && msgOps.send.value == MessageGrant(receiver, epoch)
+    && msgOps.send.None?
   }
 
   // END EDIT

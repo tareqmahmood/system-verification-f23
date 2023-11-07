@@ -1,0 +1,133 @@
+v: DistributedSystem.Variables = 
+    Variables(hosts := @0, network := @1)
+    @0:seq<Host.Variables> = (Length := 8857, [0] := @5)
+        @5:Host.Variables = ([0] := @8, [1] := 1, [2] := true)
+            @8:Host.Constants = Constants(myId := 0, numHosts := 8857)
+    @1:Network.Variables<Host.Message> = Variables(c := @6, sentMsgs := @7)
+        @6:Network.Constants = Constants(numHosts := 8857)
+        @7:set<Host.Message> = {}
+
+v': DistributedSystem.Variables = 
+    Variables(hosts := @2, network := @3)
+    @2:seq<Host.Variables> = []
+    @3:Network.Variables<Host.Message> = ()
+
+
+
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:141):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    v':DistributedSystem.Variables = Variables(hosts := @2, network := @3)
+    @0:seq<Host.Variables> = (Length := 8857, [0] := @5)
+    @1:Network.Variables<Host.Message> = Variables(c := @6, sentMsgs := @7)
+    @2:seq<Host.Variables> = []
+    @3:Network.Variables<Host.Message> = ()
+    @5:Host.Variables = Variables([0] := @8, [1] := 1, [2] := true)
+    @6:Network.Constants = Constants(numHosts := 8857)
+    @7:set<Host.Message> = {}
+    @8:Host.Constants = Constants(myId := 0, numHosts := 8857)
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:149):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    v':DistributedSystem.Variables = Variables(hosts := @2, network := @3)
+    @0:seq<Host.Variables> = (Length := 8947, [0] := @5, [(- 1)] := @6)
+    @1:Network.Variables<Host.Message> = Variables(c := @7, sentMsgs := @8)
+    @2:seq<Host.Variables> = (Length := 450)
+    @3:Network.Variables<Host.Message> = ()
+    @5:Host.Variables = Variables([0] := @10, [1] := 1, [2] := true)
+    @6:? = ?
+    @7:Network.Constants = Constants(numHosts := 8947)
+    @8:set<Host.Message> = {}
+    @10:Host.Constants = Constants(myId := 0, numHosts := 8947)
+
+
+
+
+
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:141):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+        @0:seq<Host.Variables> = (Length := 8857, [0] := @3)
+            @3:Host.Variables = Variables([0] := @6, [1] := 1, [2] := true)
+                @6:Host.Constants = Constants(myId := 0, numHosts := 8857)
+        @1:Network.Variables<Host.Message> = Variables(c := @4, sentMsgs := @5)
+            @4:Network.Constants = Constants(numHosts := 8857)
+            @5:set<Host.Message> = {}
+  
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:149):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    v':DistributedSystem.Variables = Variables(hosts := @2, network := @3)
+    @0:seq<Host.Variables> = (Length := 8947, [0] := @5, [(- 1)] := @6)
+    @1:Network.Variables<Host.Message> = Variables(c := @7, sentMsgs := @8)
+    @2:seq<Host.Variables> = (Length := 450)
+    @3:Network.Variables<Host.Message> = ()
+    @5:Host.Variables = Variables([0] := @10, [1] := 1, [2] := true)
+    @6:? = ?
+    @7:Network.Constants = Constants(numHosts := 8947)
+    @8:set<Host.Message> = {}
+    @10:Host.Constants = Constants(myId := 0, numHosts := 8947)
+
+
+
+
+
+
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:154):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    @0:seq<Host.Variables> = (Length := 611, [0] := @3)
+        @3:Host.Variables = Variables([0] := @6, [1] := 1, [2] := true)
+        @6:Host.Constants = Constants(myId := 0, numHosts := 611)
+    @1:Network.Variables<Host.Message> = Variables(c := @4, sentMsgs := @5)
+        @4:Network.Constants = Constants(numHosts := 611)
+        @5:set<Host.Message> = {}
+    
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:162):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    v':DistributedSystem.Variables = Variables(hosts := @2, network := @3)
+    @0:seq<Host.Variables> = (Length := 611, [0] := @5)
+    @1:Network.Variables<Host.Message> = Variables(c := @6, sentMsgs := @7)
+    @2:seq<Host.Variables> = []
+    @3:Network.Variables<Host.Message> = ()
+    @5:Host.Variables = Variables([0] := @8, [1] := 1, [2] := true)
+    @6:Network.Constants = Constants(numHosts := 611)
+    @7:set<Host.Message> = {}
+    @8:Host.Constants = Constants(myId := 0, numHosts := 611)
+
+
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:173):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    v':DistributedSystem.Variables = Variables(hosts := @2, network := @3)
+    @0:seq<Host.Variables> = (Length := 8880)
+    @1:Network.Variables<Host.Message> = Variables(c := @5, sentMsgs := @6)
+    @2:seq<Host.Variables> = (Length := 8457)
+    @3:Network.Variables<Host.Message> = ()
+    @5:Network.Constants = Constants(numHosts := 8880)
+    @6:set<Host.Message> = {}
+
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/project01-distributed-lock-server/exercise01.dfy:165):
+    v:DistributedSystem.Variables = Variables(hosts := @0, network := @1)
+    @0:seq<Host.Variables> = (Length := 1)
+    @1:Network.Variables<Host.Message> = Variables(c := @3, sentMsgs := @4)
+        @3:Network.Constants = Constants(numHosts := 1)
+        @4:set<Host.Message> = {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

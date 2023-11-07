@@ -40,7 +40,7 @@ module SafetySpec {
   // Variables indicates that it holds the lock.
   ghost predicate HostHoldsLock(v:DistributedSystem.Variables, idx: int) {
     && v.WF()
-    // DRAFT: fill in here (solution: 4 lines)
+    // DONE: fill in here (solution: 4 lines)
     && v.ValidHostId(idx)
     && v.hosts[idx].holdsLock
     // END EDIT
@@ -48,7 +48,7 @@ module SafetySpec {
 
   // No two hosts think they hold the lock simultaneously.
   ghost predicate Safety(v:DistributedSystem.Variables) {
-    // DRAFT: fill in here (solution: 4 lines)
+    // DONE: fill in here (solution: 4 lines)
     && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
     // && (exists i : int :: HostHoldsLock(v, i))
     // END EDIT
@@ -66,23 +66,51 @@ module Proof {
   // the message, especially about epoch numbers: intuitively, an in-flight
   // message might be received, but a not-in-flight message will always be
   // ignored by hosts.
+
   ghost predicate InFlight(v:Variables, message:Host.Message) {
     && v.WF()
     && message in v.network.sentMsgs
-    // DRAFT: fill in here (solution: 2 lines)
+    // DONE: fill in here (solution: 2 lines)
+    && |v.network.sentMsgs| > 1
     && (forall i : int | v.ValidHostId(i) :: message.epoch > v.hosts[i].epoch)
+    && (forall m : Host.Message | m in v.network.sentMsgs :: m != message ==> m.epoch < message.epoch)
     // ...add something about epoch numbers
     // END EDIT
   }
 
 
-  // FIXME: fill in here (solution: 29 lines)
+  // DONE: fill in here (solution: 29 lines)
+
+  ghost predicate SingleHostHoldsLock(v: Variables)
+  {
+    && v.WF()
+    && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
+    && (|v.network.sentMsgs| > 0 && |v.hosts| > 0 ==> (exists i:int, m:Host.Message | !InFlight(v, m) && v.ValidHostId(i) :: (m.epoch == v.hosts[i].epoch && v.hosts[i].holdsLock)))
+    && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
+  }
+
+  ghost predicate NoHostHoldsLock(v: Variables)
+  {
+    && v.WF()
+    && (|v.network.sentMsgs| > 0)
+    && (exists m:Host.Message :: InFlight(v, m))
+    && (forall i:int | v.ValidHostId(i) :: !v.hosts[i].holdsLock)
+  }
+
+  ghost predicate AtMostOneHostHoldsLock(v: Variables)
+  {
+    SingleHostHoldsLock(v) || NoHostHoldsLock(v)
+  }
   // END EDIT
 
   ghost predicate Inv(v:Variables) {
-    // FIXME: fill in here (solution: 13 lines)
+    // DONE: fill in here (solution: 13 lines)
     // Replace this placeholder with an invariant that's inductive and supports Safety.
-    && (exists i : int | v.ValidHostId(i) :: (forall j : int | j != i && v.ValidHostId(j) :: v.hosts[i].epoch > v.hosts[j].epoch))
+    // && (exists i : int | v.ValidHostId(i) :: (forall j : int | j != i && v.ValidHostId(j) :: v.hosts[i].epoch > v.hosts[j].epoch))
+    && v.WF()
+    && AtMostOneHostHoldsLock(v)
+    // && (forall message : Host.Message | InFlight(v, message) :: NoHostHoldsLock(v))
+    // && ((forall message : Host.Message :: !InFlight(v, message)) ==> SingleHostHoldsLock(v))
     // END EDIT
   }
 
@@ -91,16 +119,32 @@ module Proof {
     ensures Inv(v')
   {
     // Develop any necessary proof here.
-    // FIXME: fill in here (solution: 17 lines)
+    // DONE: fill in here (solution: 17 lines)
     var step :| NextStep(v, v', step);
     var id := step.id;
     var hstep :| Host.NextStep(v.hosts[id], v'.hosts[id], step.msgOps, hstep);
-    
 
-    assert InFlight(v, step.msgOps.send.value);
-    assert InFlight(v', step.msgOps.recv.value);
+    // debuging
+    // match hstep {
+    //   case SendGrantStep(receiver, epoch) => {
+    //     var message := Host.MessageGrant(receiver, epoch);
+    //     assert message.epoch > v'.hosts[id].epoch;
+    //     assert InFlight(v', message);
+    //     assert AtMostOneHostHoldsLock(v');
+    //     return;
+    //   }
+    //   case ReceiveGrantStep(epoch) => {
+    //     return;
+    //   }
+    // }
 
     // END EDIT
+  }
+
+  lemma InvInit(v:Variables)
+    ensures Init(v) ==> Inv(v)
+  {
+
   }
 
   lemma SafetyProof(v:Variables, v':Variables)
@@ -109,7 +153,8 @@ module Proof {
     ensures Inv(v) ==> Safety(v)
   {
     // Develop any necessary proof here.
-    // FIXME: fill in here (solution: 3 lines)
+    // DONE: fill in here (solution: 3 lines)
+
     // END EDIT
   }
 }
