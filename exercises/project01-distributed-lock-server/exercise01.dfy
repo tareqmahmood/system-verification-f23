@@ -71,9 +71,10 @@ module Proof {
     && v.WF()
     && message in v.network.sentMsgs
     // DONE: fill in here (solution: 2 lines)
-    && |v.network.sentMsgs| > 1
+    && message.epoch > 0
+    && |v.network.sentMsgs| > 0
     && (forall i : int | v.ValidHostId(i) :: message.epoch > v.hosts[i].epoch)
-    && (forall m : Host.Message | m in v.network.sentMsgs :: m != message ==> m.epoch < message.epoch)
+    // && (forall m : Host.Message | m in v.network.sentMsgs :: m != message ==> m.epoch < message.epoch)
     // ...add something about epoch numbers
     // END EDIT
   }
@@ -81,14 +82,25 @@ module Proof {
 
   // DONE: fill in here (solution: 29 lines)
 
-  ghost predicate AtStartNoMessageHost0HoldsLock(v: Variables)
+  ghost predicate NoMessage_Implies_Host0HoldsLock(v: Variables)
   {
     && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
   }
 
-  ghost predicate SomeOneHoldsLockAfterSomeMessage(v: Variables)
+  ghost predicate ReceivedAGrantMessage(v: Variables, i: HostId, m: Host.Message)
   {
-    && (|v.network.sentMsgs| > 0 && |v.hosts| > 0 ==> (exists i:int, m:Host.Message | !InFlight(v, m) && v.ValidHostId(i) :: (m.epoch == v.hosts[i].epoch && v.hosts[i].holdsLock)))
+    && v.ValidHostId(i)
+    && (m.epoch == v.hosts[i].epoch && v.hosts[i].holdsLock)
+  }
+
+  ghost predicate SomeOneReceivedAGrantMessage(v: Variables)
+  {
+    && (exists i:int, m:Host.Message | !InFlight(v, m) && v.ValidHostId(i) :: ReceivedAGrantMessage(v, i, m))
+  }
+
+  ghost predicate SomeMessageReceived_Implies_SomeOneHoldsLock(v: Variables)
+  {
+    && (|v.network.sentMsgs| > 0 && |v.hosts| > 0 && ThereIsNoInFlightMessage(v) ==> SomeOneReceivedAGrantMessage(v))
   }
 
   ghost predicate NoTwoHostsHoldingLock(v: Variables)
@@ -96,32 +108,37 @@ module Proof {
     && (forall i, j : int | HostHoldsLock(v, i) && HostHoldsLock(v, j) :: i == j)
   }
 
-  ghost predicate ThereIsAInFlightMessage(v: Variables)
+  ghost predicate ThereIsAnInFlightMessage(v: Variables)
   {
     && (|v.network.sentMsgs| > 0)
     && (exists m:Host.Message :: InFlight(v, m))
   }
 
-  ghost predicate SingleHostHoldsLock(v: Variables)
+  ghost predicate ThereIsNoInFlightMessage(v: Variables)
+  {
+    && (|v.network.sentMsgs| > 0)
+    && (forall m:Host.Message :: !InFlight(v, m))
+  }
+
+  ghost predicate OnlyOneHostHoldsLock(v: Variables)
   {
     && v.WF()
-    // && (|v.network.sentMsgs| == 0 && |v.hosts| > 0 ==> (v.hosts[0].epoch == 1 && v.hosts[0].holdsLock))
-    && AtStartNoMessageHost0HoldsLock(v)
-    && SomeOneHoldsLockAfterSomeMessage(v)
+    && NoMessage_Implies_Host0HoldsLock(v)
+    && SomeMessageReceived_Implies_SomeOneHoldsLock(v)
     && NoTwoHostsHoldingLock(v)
   }
 
   ghost predicate NoHostHoldsLock(v: Variables)
   {
     && v.WF()
-    && ThereIsAInFlightMessage(v)
+    && ThereIsAnInFlightMessage(v)
     && (forall i:int | v.ValidHostId(i) :: !v.hosts[i].holdsLock)
   }
 
   ghost predicate AtMostOneHostHoldsLock(v: Variables)
   {
     && v.WF()
-    && (SingleHostHoldsLock(v) || NoHostHoldsLock(v))
+    && (OnlyOneHostHoldsLock(v) || NoHostHoldsLock(v))
   }
   // END EDIT
 
@@ -162,6 +179,13 @@ module Proof {
   // debugging
   lemma InvHoldAtInit(v:Variables)
     ensures Init(v) ==> Inv(v)
+  {
+
+  }
+
+  // debugging
+  lemma InvEnsuresSafety(v:Variables)
+    ensures Inv(v) ==> Safety(v)
   {
 
   }
