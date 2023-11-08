@@ -45,6 +45,55 @@ module Obligations {
   }
 
   // FIXME: fill in here (solution: 8 lines)
+  ghost predicate HaveSameDecision(v: Variables, i: HostId, j: HostId)
+  {
+    && v.WF()
+    && ValidParticipantId(v, i) 
+    && ValidParticipantId(v, j)
+    && ParticipantVars(v, i).decision.Some? 
+    && ParticipantVars(v, j).decision.Some?
+    && ParticipantVars(v, i).decision.value == ParticipantVars(v, j).decision.value
+  }
+
+  ghost predicate VotedNo(v: Variables, i: HostId)
+  {
+    && v.WF()
+    && ValidParticipantId(v, i) 
+    && ParticipantVars(v, i).c.preference == No
+  }
+
+  ghost predicate VotedYes(v: Variables, i: HostId)
+  {
+    && v.WF()
+    && ValidParticipantId(v, i) 
+    && ParticipantVars(v, i).c.preference == Yes
+  }
+
+  ghost predicate AnyParticipantVotedNo(v: Variables)
+  {
+    && v.WF()
+    && (exists i : HostId :: VotedNo(v, i))
+  }
+
+  ghost predicate AllParticipantVotedYes(v: Variables)
+  {
+    && v.WF()
+    && (forall i : HostId :: VotedYes(v, i))
+  }
+
+  ghost predicate AllReachedDecision(v: Variables)
+  {
+    && v.WF()
+    && (forall i : HostId | ValidParticipantId(v, i) :: ParticipantVars(v, i).decision.Some?)
+  }
+
+  ghost predicate AllDecided(v: Variables, decision: Decision)
+    requires AllReachedDecision(v)
+  {
+    && v.WF()
+    && (forall i : HostId | ValidParticipantId(v, i) :: ParticipantVars(v, i).decision.value == decision)
+  }
+
   // END EDIT
 
   // AC-1: All processes that reach a decision reach the same one.
@@ -53,7 +102,7 @@ module Obligations {
   {
     // All hosts that reach a decision reach the same one
     // FIXME: fill in here (solution: 4 lines)
-        true // Replace me
+    && (forall i, j : HostId | ValidParticipantId(v, i) && ValidParticipantId(v, j) && i != j :: HaveSameDecision(v, i, j))
     // END EDIT
   }
 
@@ -64,7 +113,7 @@ module Obligations {
     requires v.WF()
   {
     // FIXME: fill in here (solution: 6 lines)
-     true // Replace me
+    AnyParticipantVotedNo(v) ==> (AllReachedDecision(v) ==> AllDecided(v, Abort))
     // END EDIT
   }
 
@@ -73,7 +122,7 @@ module Obligations {
     requires v.WF()
   {
     // FIXME: fill in here (solution: 5 lines)
-     true // Replace me
+    AllParticipantVotedYes(v) ==> (AllReachedDecision(v) ==> AllDecided(v, Commit))
     // END EDIT
   }
 
