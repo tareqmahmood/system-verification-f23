@@ -160,18 +160,19 @@ module Proof {
     var hstep :| Host.NextStep(v.hosts[id], v'.hosts[id], step.msgOps, hstep);
 
     // debuging
-    // match hstep {
-    //   case SendGrantStep(receiver, epoch) => {
-    //     var message := Host.MessageGrant(receiver, epoch);
-    //     assert message.epoch > v'.hosts[id].epoch;
-    //     assert InFlight(v', message);
-    //     assert AtMostOneHostHoldsLock(v');
-    //     return;
-    //   }
-    //   case ReceiveGrantStep(epoch) => {
-    //     return;
-    //   }
-    // }
+    match hstep {
+      case SendGrantStep(receiver, epoch) => {
+        var message := Host.MessageGrant(receiver, epoch);
+        assert message.epoch > v'.hosts[id].epoch;
+        assert InFlight(v', message);
+        assert NoHostHoldsLock(v');
+        assert OnlyOneHostHoldsLock(v);
+        return;
+      }
+      case ReceiveGrantStep(epoch) => {
+        return;
+      }
+    }
 
     // END EDIT
   }
