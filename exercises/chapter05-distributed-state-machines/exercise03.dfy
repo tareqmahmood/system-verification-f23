@@ -16,7 +16,21 @@ module TwoPCInvariantProof {
     requires v.WF()
   {
     // FIXME: fill in here (solution: 5 lines)
-     true // Replace me
+    true
+    && v.WF()
+    // if there is a message from the coord, the participant must have voted Yes
+    && (forall i:HostId, d:Decision | ValidParticipantId(v, i) && MessageDecision(i, d) in v.network.sentMsgs :: (
+      && CoordinatorVars(v).decision == Some(d)
+      && ParticipantVars(v, i).c.preference == Yes
+      && (exists m:Message | m in v.network.sentMsgs :: m == MessageResponse(i, Yes))
+    ))
+    // if participant voted No, there should be no message from him and to him
+    && (forall i: HostId | ValidParticipantId(v, i) && ParticipantVars(v, i).c.preference == No :: (
+      && !(exists m:Message | m in v.network.sentMsgs :: m == MessageResponse(i, Yes))
+      && !(exists m:Message | m in v.network.sentMsgs :: m == MessageResponse(i, No))
+      && !(exists m:Message | m in v.network.sentMsgs :: m == MessageDecision(i, Commit))
+      && !(exists m:Message | m in v.network.sentMsgs :: m == MessageDecision(i, Abort))
+    ))
     // END EDIT
   }
 

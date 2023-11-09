@@ -49,6 +49,9 @@ ghost predicate CoordinatorDecide(v: Variables, v': Variables, step: Step)
   && v.WF()
   && (forall i | v.ValidId(i) :: v.coordinator.prefs[i].Some?)
   && v'.coordinator.prefs == v.coordinator.prefs
+     // tareq
+  && v.coordinator.decision.None?
+     //
   && v'.coordinator.decision ==
      Some(if (forall i | v.ValidId(i) :: v.coordinator.prefs[i].value == Yes) then Commit else Abort)
   && v'.participants == v.participants
@@ -63,6 +66,9 @@ ghost predicate DecisionAnnounce(v: Variables, v': Variables, step: Step)
   && v.coordinator.decision.Some?
   && v.coordinator.decision.value == step.decision
   && v'.coordinator == v.coordinator
+     // tareq
+  && v.participants[i].decision.None?
+     //
   && v'.participants == v.participants[i := v.participants[i].(decision := Some(step.decision))]
 }
 
@@ -78,7 +84,7 @@ ghost predicate NextStep(v: Variables, v': Variables, step: Step)
 lemma NextStepDeterministicGivenStep(v: Variables, v'1: Variables, v'2: Variables, step: Step)
   requires NextStep(v, v'1, step)
   requires NextStep(v, v'2, step)
-  requires v'1 == v'2
+  ensures v'1 == v'2
 {}
 
 ghost predicate Next(v: Variables, v': Variables)
@@ -95,12 +101,34 @@ ghost predicate Consensus(v: Variables)
       v.participants[i].decision.value == v.participants[j].decision.value
 }
 
+// Edit: Start
+ghost predicate AllParticipantVotedYes(v: Variables)
+{
+  && v.WF()
+  && forall i | v.ValidId(i) :: v.participants[i].pref == Yes
+}
+
+ghost predicate AnyParticipantVotedNo(v: Variables)
+{
+  && v.WF()
+  && exists i | v.ValidId(i) :: v.participants[i].pref == No
+}
+
+ghost predicate AllDecided(v: Variables, decision: Decision)
+{
+  && v.WF()
+  && (forall i | v.ValidId(i) :: v.participants[i].decision == Some(decision))
+  && v.coordinator.decision == Some(decision)
+}
+// Edit: End
+
 // must reach commit if all participants vote yes
 ghost predicate CommitSafe(v: Variables)
   requires v.WF()
 {
   // FIXME: fill in here (solution: 3 lines)
-  true
+  // if all participants vote yes ==> all decision must be commit
+  && (AllDecided(v, Commit) ==> AllParticipantVotedYes(v))
   // END EDIT
 }
 
@@ -109,7 +137,8 @@ ghost predicate AbortSafe(v: Variables)
   requires v.WF()
 {
   // FIXME: fill in here (solution: 3 lines)
-  true
+  // if any participants vote no ==> all decision must be abort
+  && AllDecided(v, Abort) ==> (AnyParticipantVotedNo(v))
   // END EDIT
 }
 
@@ -124,13 +153,59 @@ ghost predicate Safety(v: Variables)
 // Define your inductive invariant here.
 
 // FIXME: fill in here (solution: 34 lines)
+ghost predicate VoteMatchesCoordinatorData(v: Variables)
+{
+  && v.WF()
+  && forall i | v.ValidId(i) && v.coordinator.prefs[i].Some? :: v.coordinator.prefs[i].value == v.participants[i].pref
+}
+
+ghost predicate DecisionAfterAllVotes(v: Variables)
+{
+  && v.WF()
+  && (v.coordinator.decision.Some? ==> (forall i | v.ValidId(i) :: v.coordinator.prefs[i].Some?))
+}
+
+ghost predicate ParticipantCannotDecideBeforeCoordinator(v: Variables)
+{
+  && v.WF()
+  && (v.coordinator.decision.None? ==> (forall i | v.ValidId(i) :: v.participants[i].decision.None?))
+}
+
+ghost predicate ParticipantReceivedDecisionAfterCoordDecided(v: Variables)
+{
+  && v.WF()
+  && ((forall i | v.ValidId(i) :: v.participants[i].decision.Some?) ==> (
+          && v.coordinator.decision.Some?
+          && (forall i, j | v.ValidId(i) && v.ValidId(j) :: v.participants[i].decision.value == v.participants[j].decision.value)
+        ))
+}
+
+ghost predicate CoordMadeCorrectDecision(v: Variables)
+{
+  && v.WF()
+  && ((v.coordinator.decision == Some(Commit)) ==> (forall i | v.ValidId(i) :: v.coordinator.prefs[i] == Some(Yes)))
+  && ((v.coordinator.decision == Some(Abort)) ==> (exists i | v.ValidId(i) :: v.coordinator.prefs[i] == Some(No)))
+}
+
+ghost predicate CoordCannotDecideBeforeGettingAllPrefs(v: Variables)
+{
+  && v.WF()
+  && ((exists i | v.ValidId(i) :: v.coordinator.prefs[i].None?) ==> ( v.coordinator.decision.None?))
+}
 // END EDIT
 
 ghost predicate Inv(v: Variables)
 {
   // FIXME: fill in here (solution: 5 lines)
+  && v.WF()
+  && DecisionAfterAllVotes(v)
+  && VoteMatchesCoordinatorData(v)
+  && ParticipantCannotDecideBeforeCoordinator(v)
+  && CoordMadeCorrectDecision(v)
+  && CoordCannotDecideBeforeGettingAllPrefs(v)
+  // && ParticipantReceivedDecisionAfterCoordDecided(v)
   && Safety(v)
-  // END EDIT
+     // END EDIT
 }
 
 lemma InvInit(v: Variables)
@@ -149,9 +224,15 @@ lemma InvInductive(v: Variables, v': Variables)
       return;
     }
     case CoordDecideStep => {
+      // assert forall i | v.ValidId(i) :: v.coordinator.prefs[i].Some?;
+      // assert v.coordinator.decision.None?;
       return;
     }
     case DecisionAnnounceStep(i, decision) => {
+      assert v.coordinator.decision == Some(decision);
+      assert v.participants[i].decision.None?;
+      assert v'.participants[i].decision == Some(decision);
+      // assert (forall j | v'.ValidId(j) :: v'.participants[j].decision == Some(decision));
       return;
     }
   }

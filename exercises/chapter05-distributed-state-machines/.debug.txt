@@ -1,0 +1,52 @@
+At "{" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/chapter05-distributed-state-machines/2pc_atomic.dfy:207):
+    v:_module.Variables = Variables(coordinator := @0, participants := @1)
+    v':_module.Variables = Variables(coordinator := @0, participants := @2)
+    defass:bool = false
+    step:? = ?
+    let#0_0#0#0:_module.Decision = Abort
+    let#0_1#0#0:int = 5939
+    let#2_0#0#0:int = 0
+    @0:_module.Coordinator = Coordinator(decision := @3, prefs := @4)
+    @1:seq<_module.Participant> = (Length := 5940, [3257] := @6, [5937] := @6, [5938] := @7, [5939] := @8)
+    @2:seq<_module.Participant> = (Length := 5940, [3257] := @6, [5937] := @6, [5938] := @7, [5939] := @9)
+    @3:_module.Option<_module.Decision> = Some(value := let#0_0#0#0)
+    @4:seq<_module.Option<_module.Vote>> = (Length := 5940, [3257] := @10, [5937] := @10, [5938] := @11, [5939] := @10, [(- 1)] := @12)
+    @6:_module.Participant = Participant(decision := @13, pref := @14)
+    @7:_module.Participant = Participant(decision := @15, pref := @16)
+    @8:_module.Participant = Participant(decision := @15, pref := @14)
+    @9:_module.Participant = Participant(decision := @3, pref := @14)
+    @10:_module.Option<_module.Vote> = Some(value := @14)
+    @11:_module.Option<_module.Vote> = Some(value := @16)
+    @12:? = ?
+    @13:_module.Option<_module.Decision> = Some(value := @17)
+    @14:_module.Vote = Yes
+    @15:_module.Option<_module.Decision> = None
+    @16:_module.Vote = No
+    @17:_module.Decision = Commit
+
+At "var step :| NextStep(v, v', step);" (file:///d%3A/CS839-SV-F23/system-verification-f23/exercises/chapter05-distributed-state-machines/2pc_atomic.dfy:209):
+    v:_module.Variables = Variables(coordinator := @0, participants := @1)
+    v':_module.Variables = Variables(coordinator := @0, participants := @2)
+    defass:bool = true
+    step#2:_module.Step = DecisionAnnounceStep(decision := let#0_0#0#0, i := 5939)
+    let#0_0#0#0:_module.Decision = Abort
+    let#0_1#0#0:int = 5939
+    let#2_0#0#0:int = 0
+    step#3:? = ?
+    @0:_module.Coordinator = Coordinator(decision := @3, prefs := @4)
+    @1:seq<_module.Participant> = (Length := 5940, [3257] := @6, [5937] := @6, [5938] := @7, [5939] := @8)
+    @2:seq<_module.Participant> = (Length := 5940, [3257] := @6, [5937] := @6, [5938] := @7, [5939] := @9)
+    @3:_module.Option<_module.Decision> = Some(value := let#0_0#0#0)
+    @4:seq<_module.Option<_module.Vote>> = (Length := 5940, [3257] := @10, [5937] := @10, [5938] := @11, [5939] := @10, [(- 1)] := @12)
+    @6:_module.Participant = Participant(decision := @13, pref := @14)
+    @7:_module.Participant = Participant(decision := @15, pref := @16)
+    @8:_module.Participant = Participant(decision := @15, pref := @14)
+    @9:_module.Participant = Participant(decision := @3, pref := @14)
+    @10:_module.Option<_module.Vote> = Some(value := @14)
+    @11:_module.Option<_module.Vote> = Some(value := @16)
+    @12:? = ?
+    @13:_module.Option<_module.Decision> = Some(value := @17)
+    @14:_module.Vote = Yes
+    @15:_module.Option<_module.Decision> = None
+    @16:_module.Vote = No
+    @17:_module.Decision = Commit
