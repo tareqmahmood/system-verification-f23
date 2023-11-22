@@ -55,8 +55,9 @@ module AtomicCommit {
 
   ghost predicate Init(v: Variables)
   {
-    // FIXME: fill in here (solution: 2 lines)
-    true // Replace me
+    // DONE: fill in here (solution: 2 lines)
+    && v.WF()
+    && (forall idx:ParticipantId | v.ValidParticipant(idx) :: v.decisions[idx].None?)
     // END EDIT
   }
 
@@ -65,19 +66,40 @@ module AtomicCommit {
   // can happen in the state machine.
   ghost function UltimateDecision(prefs: seq<Vote>) : Decision
   {
-    // FIXME: fill in here (solution: 1 line)
-    Commit // Replace me
+    // DONE: fill in here (solution: 1 line)
+    if (exists i:ParticipantId | 0 <= i < |prefs| :: prefs[i] == No) then Abort
+    else Commit
     // END EDIT
   }
 
   // Define your step predicates here
-  // FIXME: fill in here (solution: 9 lines)
+  // DONE: fill in here (solution: 9 lines)
+  ghost predicate NoOp(v:Variables, v':Variables, event:Event)
+  {
+    && v.WF()
+    && v'.WF()
+    && v' == v
+    && event == NoOpEvent()
+  }
+
+  ghost predicate Decide(v:Variables, v':Variables, event:Event, i:ParticipantId)
+  {
+    && v.WF()
+    && v'.WF()
+    && v.preferences == v'.preferences
+    && event == ParticipantLearnsEvent(i)
+    && v.ValidParticipant(i)
+    && v.decisions[i].None?
+    && (v'.decisions[i] == Some(UltimateDecision(v.preferences)))
+    && (forall j:ParticipantId | j != i && v.ValidParticipant(j) :: v.decisions[j] == v'.decisions[j])
+  }
   // END EDIT
 
   // JayNF
   datatype Step =
-      // FIXME: fill in here (solution: 1 line)
-    | ReplaceMeWithYourJayNFSteps()
+      // DONE: fill in here (solution: 1 line)
+    | NoOpStep()
+    | DecideStep(i:ParticipantId)
       // END EDIT
 
   ghost predicate NextStep(v: Variables, v': Variables, event: Event, step: Step)
@@ -86,8 +108,9 @@ module AtomicCommit {
     && v'.preferences == v.preferences
     && (
          match step
-         // FIXME: fill in here (solution: 1 line)
-         case ReplaceMeWithYourJayNFSteps => true
+         // DONE: fill in here (solution: 1 line)
+         case NoOpStep() => NoOp(v, v', event)
+         case DecideStep(i) => Decide(v, v',  event, i)
          // END EDIT
        )
   }
@@ -117,8 +140,34 @@ module AtomicCommit {
     ensures Last(ex).decisions[1] == Some(Commit)
   {
     // FIXME: fill in here (solution: 9 lines)
-    ex := []; // Your execution here
-    evs := []; // Your events here
+
+    var v1 := Variables(
+      preferences := [Yes, Yes],
+      decisions := [None, None]
+    );
+    assert Init(v1);
+
+    var e1 := ParticipantLearnsEvent(0);
+    var s1 := DecideStep(0);
+    var v2 := Variables(
+      preferences := [Yes, Yes],
+      decisions := [Some(Commit), None]
+    );
+    assert NextStep(v1, v2, e1, s1);
+    assert ExecutionSatisfiesSpec([v1, v2], [e1]);
+
+    var e2 := ParticipantLearnsEvent(1);
+    var s2 := DecideStep(1);
+    var v3 := Variables(
+      preferences := [Yes, Yes],
+      decisions := [Some(Commit), Some(Commit)]
+    );
+    assert NextStep(v2, v3, e2, s2);
+    assert ExecutionSatisfiesSpec([v1, v2, v3], [e1, e2]);
+
+    ex := [v1, v2, v3];
+    evs := [e1, e2];
+
     // END EDIT
   }
 
@@ -133,8 +182,34 @@ module AtomicCommit {
     ensures Last(ex).decisions[1] == Some(Abort)
   {
     // FIXME: fill in here (solution: 10 lines)
-    ex := []; // Your execution here
-    evs := []; // Your events here
+    var v1 := Variables(
+      preferences := [Yes, No],
+      decisions := [None, None]
+    );
+    assert Init(v1);
+    assert v1.preferences[1] == No;
+    assert UltimateDecision(v1.preferences) == Abort;
+
+    var e1 := ParticipantLearnsEvent(0);
+    var s1 := DecideStep(0);
+    var v2 := Variables(
+      preferences := [Yes, No],
+      decisions := [Some(Abort), None]
+    );
+    assert NextStep(v1, v2, e1, s1);
+    assert ExecutionSatisfiesSpec([v1, v2], [e1]);
+
+    var e2 := ParticipantLearnsEvent(1);
+    var s2 := DecideStep(1);
+    var v3 := Variables(
+      preferences := [Yes, No],
+      decisions := [Some(Abort), Some(Abort)]
+    );
+    assert NextStep(v2, v3, e2, s2);
+    assert ExecutionSatisfiesSpec([v1, v2, v3], [e1, e2]);
+
+    ex := [v1, v2, v3];
+    evs := [e1, e2];
     // END EDIT
   }
 }
