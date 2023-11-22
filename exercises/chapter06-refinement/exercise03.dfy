@@ -73,15 +73,16 @@ module RefinementProof refines RefinementTheorem {
   ghost function Preferences(v: DistributedSystem.Variables) : seq<Vote>
     requires v.WF()
   {
-    // FIXME: fill in here (solution: 1 line)
-    []   // Replace me
+    // DONE: fill in here (solution: 1 line)
+    seq(ParticipantCount(v), index requires 0 <= index < ParticipantCount(v) => v.hosts[index].participant.c.preference)
     // END EDIT
   }
 
   ghost function VariablesAbstraction(v: DistributedSystem.Variables) : AtomicCommit.Variables
   {
-    // FIXME: fill in here (solution: 3 lines)
-    AtomicCommit.Variables(None, [])   // Replace me
+    // DONE: fill in here (solution: 3 lines)
+    var decisions := seq(ParticipantCount(v), index requires 0 <= index < ParticipantCount(v) => v.hosts[index].participant.decision);
+    AtomicCommit.Variables(Preferences(v), decisions)   // Replace me
     // END EDIT
   }
 
@@ -91,8 +92,9 @@ module RefinementProof refines RefinementTheorem {
     // Be certain to fully-qualify the invariant name (mention its module
     // explicitly) to avoid inadvertently referring to the shadowing definition
     // RefinementTheorem.Inv.
-    // FIXME: fill in here (solution: 1 line)
-    false  // Replace me
+    // DONE: fill in here (solution: 1 line)
+    // && v.WF()
+    && TwoPCInvariantProof.Inv(v)
     // END EDIT
   }
 
@@ -112,8 +114,10 @@ module RefinementProof refines RefinementTheorem {
     // ensures AtomicCommit.Next(VariablesAbstraction(v), VariablesAbstraction(v'), event)
   {
     // Advice: appeal to the existing proof to get Inv(v')!
+    assert Inv(v);
     assert Inv(v') by {
-      // FIXME: fill in here (solution: 1 line)
+      // DONE: fill in here (solution: 1 line)
+      TwoPCInvariantProof.InvInductive(v, v', event);
       // END EDIT
     }
 
@@ -123,7 +127,103 @@ module RefinementProof refines RefinementTheorem {
     // which thing happened in the DistributedSystem, split the cases, and
     // assert the right AtomicCommit.NextStep() predicate. Mostly, Dafny needs
     // those asserts because they're witnesses to the `exists` in AtomicCommit.Next().
-    // FIXME: fill in here (solution: 51 lines)
+    // DONE: fill in here (solution: 51 lines)
+    assert AtomicCommit.Next(VariablesAbstraction(v), VariablesAbstraction(v'), event) by {
+      // from ch05exercise03.dfy
+      var step :| DistributedSystem.NextStep(v, v', event, step);
+      assert step.HostActionStep?;
+      var hostId := step.hostId;
+      var msgOps := step.msgOps;
+      if v.hosts[hostId].CoordinatorVariables? {
+        // assert event.NoOpEvent?;
+        // coordinator proof
+        // assert hostId == |v.hosts| - 1; // this is the coordinator
+        // assert forall hostId':HostId | ValidParticipantId(v, hostId') ::
+        //     ParticipantVars(v', hostId') == ParticipantVars(v, hostId');
+        // var cstep :| CoordinatorHost.NextStep(CoordinatorVars(v), CoordinatorVars(v'), cstep, msgOps, event);
+        // match cstep {
+        //   case SendReqStep => { return; }
+        //   case LearnVoteStep => { return; }
+        //   case DecideStep(decision) => { return; }
+        // }
+        return;
+      } else {
+        // participant proof
+        assert v.hosts[hostId].ParticipantVariables?;
+        var pstep :| ParticipantHost.NextStep(ParticipantVars(v, hostId), ParticipantVars(v', hostId), pstep, msgOps, event);
+        assert ParticipantVars(v', hostId).c == ParticipantVars(v, hostId).c;
+        assert forall hostId':HostId | ValidParticipantId(v, hostId') && hostId' != hostId
+            :: ParticipantVars(v', hostId') == ParticipantVars(v, hostId');
+        match pstep {
+          case VoteStep => {
+            assert CoordinatorVars(v') == CoordinatorVars(v);
+            assert CoordinatorStateSupportedByVote(v');
+            if ParticipantVars(v, hostId).c.preference.No? {
+              assert ParticipantVars(v', hostId).decision.Some?;
+              assert ParticipantVars(v', hostId).decision.value == Abort;
+
+              if ParticipantVars(v, hostId).decision.None? {
+                assert VariablesAbstraction(v).decisions[hostId].None?;
+                assert VariablesAbstraction(v).preferences[hostId].No?;
+                assert AtomicCommit.NextStep(
+                  VariablesAbstraction(v), 
+                  VariablesAbstraction(v'), 
+                  event, 
+                  AtomicCommit.DecideStep(hostId)
+                );
+                return;
+              }
+              else {
+                // assert AtomicCommit.NextStep(
+                //   VariablesAbstraction(v), 
+                //   VariablesAbstraction(v'), 
+                //   event, 
+                //   AtomicCommit.NoOpStep()
+                // );
+                return;
+              }
+
+              // if event.ParticipantLearnsEvent? {
+              //   assert ParticipantVars(v, hostId).decision.None?;
+              //   return;
+              // }
+              // else {
+              //   assert event.NoOpEvent?;
+              //   return;
+              // }
+            }
+            assert ParticipantVars(v', hostId) == ParticipantVars(v, hostId);
+            assert SafetyAC1(v');
+            assert SafetyAC3(v');
+            assert SafetyAC4(v');
+            return;
+          }
+          case LearnDecisionStep => { 
+            if ParticipantVars(v, hostId).decision.None? {
+              // assert event.ParticipantLearnsEvent?;
+              assert (forall i:HostId | i < ParticipantCount(v) :: ParticipantVars(v, i).c.preference == VariablesAbstraction(v).preferences[i]);
+              assert AtomicCommit.NextStep(
+                VariablesAbstraction(v), 
+                VariablesAbstraction(v'), 
+                event, 
+                AtomicCommit.DecideStep(hostId)
+              );
+              return;
+            }
+            else {
+              // assert AtomicCommit.NextStep(
+              //   VariablesAbstraction(v), 
+              //   VariablesAbstraction(v'), 
+              //   event, 
+              //   AtomicCommit.NoOpStep()
+              // );
+              return;
+            }
+            return;
+          }
+        }
+      }
+    }
     // END EDIT
   }
 }
