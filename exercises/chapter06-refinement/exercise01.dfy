@@ -139,7 +139,7 @@ module AtomicCommit {
     ensures Last(ex).decisions[0] == Some(Commit)
     ensures Last(ex).decisions[1] == Some(Commit)
   {
-    // FIXME: fill in here (solution: 9 lines)
+    // DONE: fill in here (solution: 9 lines)
 
     var v1 := Variables(
       preferences := [Yes, Yes],
@@ -181,7 +181,7 @@ module AtomicCommit {
     ensures Last(ex).decisions[0] == Some(Abort)
     ensures Last(ex).decisions[1] == Some(Abort)
   {
-    // FIXME: fill in here (solution: 10 lines)
+    // DONE: fill in here (solution: 10 lines)
     var v1 := Variables(
       preferences := [Yes, No],
       decisions := [None, None]

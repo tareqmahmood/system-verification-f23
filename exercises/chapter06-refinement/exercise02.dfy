@@ -32,8 +32,9 @@ module AtomicCommitProperties {
   ghost predicate SafetyAC1(v: Variables)
     requires v.WF()
   {
-    // FIXME: fill in here (solution: 4 lines)
-    false // Replace me
+    // DONE: fill in here (solution: 4 lines)
+    && ((forall i:ParticipantId | v.ValidParticipant(i) :: v.decisions[i].Some?) 
+        ==> (forall i:ParticipantId, j:ParticipantId | v.ValidParticipant(i) && v.ValidParticipant(j) && i != j :: v.decisions[i] == v.decisions[j]))
     // END EDIT
   }
 
@@ -44,16 +45,18 @@ module AtomicCommitProperties {
   ghost predicate SafetyAC3(v: Variables)
     requires v.WF()
   {
-    // FIXME: fill in here (solution: 6 lines)
-    false // Replace me
+    // DONE: fill in here (solution: 6 lines)
+    && ((exists i:ParticipantId | v.ValidParticipant(i) :: v.preferences[i] == No) 
+        ==> (forall i:ParticipantId | v.ValidParticipant(i) && v.decisions[i].Some? :: v.decisions[i].value == Abort))
     // END EDIT
   }
 
   ghost predicate SafetyAC4(v: Variables)
     requires v.WF()
   {
-    // FIXME: fill in here (solution: 4 lines)
-    false // Replace me
+    // DONE: fill in here (solution: 4 lines)
+    && ((forall i:ParticipantId | v.ValidParticipant(i) :: v.preferences[i] == Yes) 
+        ==> (forall i:ParticipantId | v.ValidParticipant(i) && v.decisions[i].Some? :: v.decisions[i].value == Commit))
     // END EDIT
   }
 
